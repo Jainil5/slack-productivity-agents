@@ -12,7 +12,7 @@ The platform consists of three specialized AI agents, each designed for a specif
 
 # Agents
 
-## Personal Agent - The Personal Agent helps employees perform everyday workplace tasks.
+## Personal Agent - (Helps employees perform everyday workplace tasks.)
 
 ### Features
 
@@ -25,7 +25,7 @@ Example:
 
 ---
 
-## Knowledge Agent - The Knowledge Agent retrieves answers from your organization's internal knowledge base.
+## Knowledge Agent - (Retrieves answers from your organization's internal knowledge base.)
 
 ### Features
 
@@ -40,23 +40,14 @@ Example:
 
 ---
 
-## Engineering Agent - Assists developers by monitoring engineering systems and helping investigate issues across services.
+## Engineering Agent - (Assists developers by monitoring engineering systems and helping investigate issues across services.)
 
 ### Features
 
-#### MLflow Monitoring - Monitor MLflow experiments and model serving.
-
-Example:
-> Show today's failed inference requests.
-> Which model version is currently deployed?
-> What is the average API latency?
+#### MLflow Monitoring - (Monitor MLflow experiments and model serving.)
+#### API Observability - (Analyze application behavior and operational metrics.)
 
 ---
-
-#### API Observability - Analyze application behavior and operational metrics.
-
----
-
 
 # Architecture
 
