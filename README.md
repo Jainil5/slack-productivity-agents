@@ -105,45 +105,6 @@ Example:
 
 ---
 
-#### Codebase Assistant
-
-Help developers understand and work with the project.
-
-Capabilities include:
-
-* Explain project architecture
-* Navigate the codebase
-* Locate classes and functions
-* Explain APIs
-* Suggest refactoring
-* Debug code
-* Generate unit tests
-* Explain stack traces
-
-Example:
-
-> Where is the authentication middleware?
-
-> Explain this FastAPI endpoint.
-
-> Which module handles Slack events?
-
-> Generate tests for this service.
-
----
-
-#### Engineering Knowledge
-
-Search technical documentation including:
-
-* API documentation
-* Architecture diagrams
-* Design documents
-* Runbooks
-* Deployment guides
-* Internal engineering wiki
-
----
 
 # Architecture
 
@@ -175,6 +136,19 @@ Search technical documentation including:
 
 ---
 
+## 🧪 Demo Images
+
+## 1. Personal Agent(Attendance management)
+<img width="2500" height="1155" alt="SCR-20260708-bgwc" src="https://github.com/user-attachments/assets/034dc3dc-c502-44eb-a054-154c0d0eae34" />
+
+## 2. Kowledge Agent (Org Documents search and answering)
+<img width="2548" height="1314" alt="SCR-20260714-duuf-2" src="https://github.com/user-attachments/assets/10853a56-de61-413b-9b57-f08a302536a7" />
+
+## 3. AutoText Feature (Flags unusual logs in bakend to monitor systems (logs, models, latencies and more))
+<img width="2538" height="1281" alt="SCR-20260718-meli" src="https://github.com/user-attachments/assets/9eda9beb-174d-4dea-91b0-beaa646401c4" />
+
+
+---
 # Future Integrations
 
 * GitHub
