@@ -12,96 +12,48 @@ The platform consists of three specialized AI agents, each designed for a specif
 
 # Agents
 
-## Personal Agent
-
-The Personal Agent helps employees perform everyday workplace tasks.
+## Personal Agent - The Personal Agent helps employees perform everyday workplace tasks.
 
 ### Features
 
-* General AI assistant
-* Attendance management
-* Slack messaging
-* Personal productivity tools
+* General AI assistant * Attendance management * Slack messaging * Personal productivity tools
 
 Example:
-
 > How many sick leaves do I have left?
-
 > Message Backend Team that deployment is complete.
-
 > Explain LangChain.
 
 ---
 
-## Knowledge Agent
-
-The Knowledge Agent retrieves answers from your organization's internal knowledge base.
+## Knowledge Agent - The Knowledge Agent retrieves answers from your organization's internal knowledge base.
 
 ### Features
 
-* Hybrid Search
-* Vector Search
-* Retrieval-Augmented Generation (RAG)
-* Company documentation search
-* Policy and SOP lookup
+* Hybrid Search - Vector Search + BM25
+* Retrieval-Augmented Generation (RAG) over Company documentation search
  
 Example:
 
 > Explain the deployment pipeline.
-
 > What is the leave policy?
-
 > Summarize the onboarding guide.
 
 ---
 
-## Engineering Agent
-
-The Engineering Agent assists developers by monitoring engineering systems and helping investigate issues across services.
+## Engineering Agent - Assists developers by monitoring engineering systems and helping investigate issues across services.
 
 ### Features
 
-#### MLflow Monitoring
-
-Monitor MLflow experiments and model serving.
-
-Examples:
-
-* Experiment status
-* Model versions
-* Inference latency
-* API response logs
-* Failure rates
-* Model performance metrics
+#### MLflow Monitoring - Monitor MLflow experiments and model serving.
 
 Example:
-
 > Show today's failed inference requests.
-
 > Which model version is currently deployed?
-
 > What is the average API latency?
 
 ---
 
-#### API Observability
-
-Analyze application behavior and operational metrics.
-
-Examples:
-
-* API response times
-* Error rates
-* Request failures
-* Health checks
-* Slow endpoints
-* Service availability
-
-Example:
-
-> Which endpoint has the highest latency?
-
-> Show all 500 errors from today.
+#### API Observability - Analyze application behavior and operational metrics.
 
 ---
 
@@ -110,21 +62,9 @@ Example:
 
 ```text
                            Slack
-
-                              │
-                              ▼
-
-                  Slack Productivity Agents
-
-                ┌────────────────────────────┐
-                │        Request Router       │
-                └──────────────┬─────────────┘
-                               │
       ┌────────────────────────┼────────────────────────┐
       ▼                        ▼                        ▼
-
  Personal Agent         Knowledge Agent        Engineering Agent
-
       │                        │                        │
       │                        │                        │
  Attendance              Hybrid Search           MLflow
@@ -153,18 +93,9 @@ Example:
 
 * GitHub
 * Jira
-* Confluence
-* PagerDuty
-* Grafana
-* Prometheus
 * Kubernetes
 * Docker
-* Jenkins
-* ArgoCD
-* Datadog
-* Sentry
 * MLflow
-* OpenTelemetry
 
 ---
 
