@@ -70,13 +70,13 @@ Example:
 ## 🧪 Demo Images
 
 ## 1. Personal Agent(Attendance management)
-<img width="2522" height="1341" alt="SCR-20260718-rlcv" src="app/demo/ka1.png" />
+<img width="2522" height="1341" alt="SCR-20260718-rlcv" src="app/demo/pa1.png" />
 
 ## 2. Kowledge Agent (Org Documents search and answering)
-<img width="2548" height="1314" alt="SCR-20260714-duuf-2" src="https://github.com/user-attachments/assets/10853a56-de61-413b-9b57-f08a302536a7" />
+<img width="2548" height="1314" alt="SCR-20260714-duuf-2" src="app/demo/ka1.png" />
 
 ## 3. AutoText Feature (Flags unusual logs in bakend to monitor systems (logs, models, latencies and more))
-<img width="2538" height="1281" alt="SCR-20260718-meli" src="https://github.com/user-attachments/assets/9eda9beb-174d-4dea-91b0-beaa646401c4" />
+<img width="2538" height="1281" alt="SCR-20260718-meli" src="app/demo/log.png" />
 
 
 ---
