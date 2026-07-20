@@ -1,11 +1,17 @@
+# Optimized slack_tools.py
 import json
+import logging
 import os
+import re
+from difflib import get_close_matches
+from typing import Dict, List
+
 from dotenv import load_dotenv
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-import re
-from difflib import get_close_matches
-from typing import List, Dict
+
+logger = logging.getLogger(__name__)
+
 
 class SlackService:
     CACHE_FILE = "app/data/slack_workspace.json"
@@ -13,41 +19,34 @@ class SlackService:
     def __init__(self):
         load_dotenv()
 
-        self.bot_token = os.getenv("SLACK_BOT_TOKEN")
-
+        self.bot_token = os.getenv("PA_BOT_TOKEN")
         if not self.bot_token:
             raise ValueError("SLACK_BOT_TOKEN not found in .env")
 
         self.client = WebClient(token=self.bot_token)
 
-        self.workspace = {
-            "users": [],
-            "channels": []
-        }
-
-        self.lookup = {}
+        self.workspace = {"users": [], "channels": []}
+        self.lookup: Dict[str, str] = {}
+        self.search_index: List[Dict] = []
 
         self.load_cache()
 
-    # Refresh Workspace
+    @staticmethod
+    def normalize(text: str) -> str:
+        return re.sub(r"[\W_]+", " ", str(text).lower()).strip()
 
     def refresh_workspace(self):
-        users = []
-        channels = []
+        users, channels = [], []
 
         cursor = None
-
         while True:
-
             response = self.client.users_list(cursor=cursor)
 
             for member in response["members"]:
-
                 if member.get("deleted"):
                     continue
 
                 profile = member.get("profile", {})
-
                 users.append({
                     "id": member["id"],
                     "real_name": member.get("real_name", ""),
@@ -57,204 +56,180 @@ class SlackService:
                 })
 
             cursor = response.get("response_metadata", {}).get("next_cursor")
-
             if not cursor:
                 break
 
-        # ---------------- Channels ----------------
-
         cursor = None
-
         while True:
-
             response = self.client.conversations_list(
                 types="public_channel,private_channel",
                 limit=1000,
-                cursor=cursor
+                cursor=cursor,
             )
 
             for channel in response["channels"]:
-
                 channels.append({
                     "id": channel["id"],
                     "name": channel["name"],
-                    "previous_names": channel.get("previous_names", [])
+                    "previous_names": channel.get("previous_names", []),
                 })
 
             cursor = response.get("response_metadata", {}).get("next_cursor")
-
             if not cursor:
                 break
 
-        self.workspace = {
-            "users": users,
-            "channels": channels
-        }
-
+        self.workspace = {"users": users, "channels": channels}
         self.build_lookup()
-
         self.save_cache()
-
-        print("Workspace refreshed.")
-
-    # ============================================================
-    # Cache
-    # ============================================================
+        logger.info("Workspace refreshed.")
 
     def save_cache(self):
-
+        os.makedirs(os.path.dirname(self.CACHE_FILE), exist_ok=True)
         with open(self.CACHE_FILE, "w") as f:
             json.dump(self.workspace, f, indent=4)
 
     def load_cache(self):
-
         if os.path.exists(self.CACHE_FILE):
-
             with open(self.CACHE_FILE, "r") as f:
                 self.workspace = json.load(f)
-
             self.build_lookup()
-
         else:
-
             self.refresh_workspace()
 
-    # ============================================================
-    # Lookup
-    # ============================================================
-
-    @staticmethod
-    def normalize(text):
-
-        return (
-            text.lower()
-            .replace("#", "")
-            .replace("-", " ")
-            .replace("_", " ")
-            .strip()
-        )
-
     def build_lookup(self):
+        self.lookup.clear()
+        self.search_index.clear()
 
-        self.lookup = {}
+        def add(value: str, slack_id: str):
+            if not value:
+                return
+            value = self.normalize(value)
+            self.lookup[value] = slack_id
+            self.search_index.append({"text": value, "id": slack_id})
 
-        # Users
         for user in self.workspace["users"]:
-
-            values = [
+            for value in (
                 user["real_name"],
                 user["display_name"],
                 user["username"],
-                user["email"]
-            ]
+                user["email"],
+            ):
+                add(value, user["id"])
 
-            for value in values:
-
-                if value:
-                    self.lookup[self.normalize(value)] = user["id"]
-
-        # Channels
         for channel in self.workspace["channels"]:
+            add(channel["name"], channel["id"])
+            for old in channel.get("previous_names", []):
+                add(old, channel["id"])
 
-            self.lookup[self.normalize(channel["name"])] = channel["id"]
-
-            for old in channel["previous_names"]:
-                self.lookup[self.normalize(old)] = channel["id"]
-
-    # Resolve Entity
-
-    def resolve_entity(self, entity):
-
-        return self.lookup.get(self.normalize(entity))
-
-    def resolve_entity(self, entity):
-
+    def resolve_entity(self, entity: str):
         entity = self.normalize(entity)
 
         if entity in self.lookup:
             return self.lookup[entity]
 
-        # 2. Regex / Partial Match
+        for item in self.search_index:
+            text = item["text"]
+            if entity in text or text in entity or re.search(rf"\b{re.escape(entity)}\b", text):
+                return item["id"]
 
-        for user in self.get_users():
+        match = get_close_matches(entity, self.lookup.keys(), n=1, cutoff=0.75)
+        return self.lookup[match[0]] if match else None
 
-            candidates = [
-                user.get("real_name", ""),
-                user.get("display_name", ""),
-                user.get("username", ""),
-                user.get("email", "")
-            ]
 
-            for value in candidates:
+    
+    def send_message(self, entity: str, message: str):
+        """
+        Send a Slack message.
 
-                if not value:
-                    continue
+        Supports:
+        - User name/email/display name -> DM
+        - User ID (U...)              -> DM
+        - Channel name                -> Channel
+        - Channel ID (C...)           -> Channel
+        - DM Channel ID (D...)        -> Existing DM
+        """
 
-                value = self.normalize(value)
-
-                if (
-                    re.search(rf"\b{re.escape(entity)}\b", value)
-                    or entity in value
-                    or value in entity
-                ):
-                    return user["id"]
-
-        # 3. Channel Match
-
-        for channel in self.get_channels():
-
-            candidates = [channel["name"]]
-            candidates.extend(channel.get("previous_names", []))
-
-            for value in candidates:
-
-                value = self.normalize(value)
-
-                if (
-                    re.search(rf"\b{re.escape(entity)}\b", value)
-                    or entity in value
-                    or value in entity
-                ):
-                    return channel["id"]
-
-        # 4. Fuzzy Match
-
-        match = get_close_matches(
-            entity,
-            self.lookup.keys(),
-            n=1,
-            cutoff=0.75
+        slack_id = (
+            entity
+            if entity.startswith(("U", "C", "D"))
+            else self.resolve_entity(entity)
         )
 
-        if match:
-            return self.lookup[match[0]]
+        if not slack_id:
+            raise ValueError(f"'{entity}' not found in Slack workspace.")
 
-        return None
-    
+        destination = ""
+        final_channel = ""
 
+        # ---------------- DM to User ----------------
+        if slack_id.startswith("U"):
+            dm = self.client.conversations_open(users=[slack_id])
+            final_channel = dm["channel"]["id"]
 
-    # Auto Text
+            self.client.chat_postMessage(
+                channel=final_channel,
+                text=message,
+            )
 
+            user = next(
+                (u for u in self.workspace["users"] if u["id"] == slack_id),
+                None,
+            )
+
+            name = (
+                user.get("real_name")
+                or user.get("display_name")
+                or user.get("username")
+                if user
+                else slack_id
+            )
+
+            destination = f"DM -> {name}"
+
+        # ---------------- Existing DM ----------------
+        elif slack_id.startswith("D"):
+            final_channel = slack_id
+
+            self.client.chat_postMessage(
+                channel=final_channel,
+                text=message,
+            )
+
+            destination = f"Existing DM ({slack_id})"
+
+        # ---------------- Channel ----------------
+        else:
+            final_channel = slack_id
+
+            self.client.chat_postMessage(
+                channel=final_channel,
+                text=message,
+            )
+
+            channel = next(
+                (c for c in self.workspace["channels"] if c["id"] == slack_id),
+                None,
+            )
+
+            channel_name = channel["name"] if channel else slack_id
+            destination = f"Channel -> #{channel_name}"
+
+        print("=" * 70)
+        print("✅ Slack message sent successfully")
+        print(f"📍 Destination : {destination}")
+        print(f"🆔 Channel ID  : {final_channel}")
+        print(f"💬 Message     : {message}")
+        print("=" * 70)
+
+        return {
+            "destination": destination,
+            "channel": final_channel,
+            "message": message,
+        }
     def slack_autotext(self, extracted_details: List[Dict]):
-
-        """
-        Input:
-        [
-            {
-                "entity": "jainil",
-                "personalized_message": "Send the requested project files."
-            },
-            {
-                "entity": "backend team",
-                "personalized_message": "Schedule a meeting."
-            }
-        ]
-        """
-
         results = []
 
         for item in extracted_details:
-
             entity = item.get("entity")
             message = item.get("personalized_message")
 
@@ -262,36 +237,34 @@ class SlackService:
                 results.append({
                     "entity": entity,
                     "status": "failed",
-                    "reason": "Missing entity or personalized_message"
+                    "reason": "Missing entity or personalized_message",
                 })
                 continue
 
             try:
+                slack_id = self.resolve_entity(entity)
 
-                response = self.send_message(
-                    entity=entity,
-                    message=message
-                )
+                if not slack_id:
+                    raise ValueError(f"'{entity}' not found.")
 
+                response = self.send_message(slack_id, message)
+                print("RESSS:",response)
                 results.append({
                     "entity": entity,
+                    "resolved_id": slack_id,
                     "status": "success",
                     "channel": response["channel"],
-                    "ts": response["ts"]
+                    "timestamp": response["ts"],
                 })
 
             except Exception as e:
-
                 results.append({
                     "entity": entity,
                     "status": "failed",
-                    "reason": str(e)
+                    "reason": str(e),
                 })
 
         return results
-    # ============================================================
-    # Helpers
-    # ============================================================
 
     def get_users(self):
         return self.workspace["users"]
@@ -302,95 +275,8 @@ class SlackService:
     def refresh(self):
         self.refresh_workspace()
 
-
-# ============================================================
-# Example
-# ============================================================
-
 if __name__ == "__main__":
-
-    slack = SlackService()
-
-    # Only run this when users/channels change
-    # slack.refresh()
+    sl = SlackService()
+    print(sl.get_users())
+    print(sl.get_channels())
     
-    # slack.send_message(
-    #     "Jainil Patel",
-    #     "Hello from AI Agent 🚀"
-    # )
-
-    # slack.send_message(
-    #     "general",
-    #     "Deployment completed successfully ✅"
-    # )
-
-    # slack.send_message(
-    #     "Finance Project",
-    #     "Testing channel lookup."
-    # )
-
-    # print("\n========== USERS ==========")
-    # for user in slack.get_users():
-    #     print(user)
-
-    # print("\n========== CHANNELS ==========")
-    # for channel in slack.get_channels():
-    #     print(channel)
-
-    # print("\n========== LOOKUP TESTS ==========")
-
-    # tests = [
-    #     # User names
-    #     "Jainil Patel",
-    #     "jainil patel",
-    #     "JAINIL PATEL",
-
-    #     # Display name
-    #     "jainil",
-
-    #     # Username
-    #     "jainilp",
-
-    #     # Email
-    #     "jainil@example.com",
-
-    #     # Channels
-    #     "general",
-    #     "#general",
-    #     "finance-project",
-    #     "finance project",
-
-    #     # Invalid
-    #     "unknown person",
-    #     "random channel",
-    #     "mann shah",
-    #     "dev"
-    # ]
-
-    # for entity in tests:
-    #     print(f"{entity:<25} -> {slack.resolve_entity(entity)}")
-
-    extracted_details = [
-        {
-            "entity": "jainil",
-            "personalized_message": "Send the requested project files via email."
-        },
-        {
-            "entity": "backend team",
-            "personalized_message": "Schedule a meeting with the backend team."
-        },
-        {
-            "entity": "general",
-            "personalized_message": "Hello from the Slack AutoText tool 🚀"
-        },
-        {
-            "entity": "unknown person",
-            "personalized_message": "This should fail."
-        }
-    ]
-
-    result = slack.slack_autotext(extracted_details)
-
-    print("\n========== RESULTS ==========")
-
-    print(json.dumps(result, indent=4))

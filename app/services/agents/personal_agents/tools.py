@@ -145,7 +145,29 @@ def attendance_manager(
     - paid
     """
 
-    data = _load_data()
+    data = {
+    "quota": {
+        "sick": 6,
+        "casual": 8,
+        "paid": 12
+    },
+    "used": {
+        "sick": 2,
+        "casual": 0,
+        "paid": 0
+    },
+    "history": [
+        {
+            "date": "2026-06-10",
+            "type": "sick",
+            "reason": "Fever"
+        },
+        {
+            "date": "2026-07-12",
+            "type": "sick"
+        }
+    ]
+}
 
     action = action.lower().strip()
 
@@ -246,20 +268,33 @@ def attendance_manager(
     )
 
 from langchain.tools import tool
-from app.services.agents.personal_agents.autotexter import send_autotext
+from app.services.text_extraction import extract
 
 
 @tool
 def autotext_tool(query: str) -> str:
     """
-    Send Slack messages using natural language.
+    Use this tool when user wants to send message to someone or some group.
 
     Examples:
-    - text jainil hello
-    - message backend deploy API
-    - tell finance invoice approved
+    - text backend team update the api
+    - message frontend team about deploy api 
+    
     """
 
-    return send_autotext(query)
+    return extract(query,type="message")
 
+
+# @tool
+# def manage_event(query: str) -> str:
+#     """
+#     Use this tool when user wants to create or manage events like meetings.
+
+#     Examples:
+#     - create meeting with backend team at 2 PM
+#     - schedule a meeting with frontend team at 2 PM
+#     """
+    
+#     return extract(query,type="event")
+    
 

@@ -12,10 +12,6 @@ from app.services.agents.personal_agents.agent import run_agent
 load_dotenv()
 
 
-# ==================================================
-# HELPERS
-# ==================================================
-
 def markdown_to_slack(text: str) -> str:
     text = re.sub(r"\*\*(.*?)\*\*", r"*\1*", text)
     text = re.sub(r"\[(.*?)\]\((.*?)\)", r"<\2|\1>", text)
