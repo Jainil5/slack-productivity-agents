@@ -70,7 +70,7 @@ Example:
 ## 🧪 Demo Images
 
 ## 1. Personal Agent(Attendance management)
-<img width="2522" height="1341" alt="SCR-20260718-rlcv" src="https://github.com/user-attachments/assets/24a15faa-0047-4521-afdc-6c2cc1cc9e6f" />
+<img width="2522" height="1341" alt="SCR-20260718-rlcv" src="app/demo/ka1.png" />
 
 ## 2. Kowledge Agent (Org Documents search and answering)
 <img width="2548" height="1314" alt="SCR-20260714-duuf-2" src="https://github.com/user-attachments/assets/10853a56-de61-413b-9b57-f08a302536a7" />
