@@ -12,136 +12,40 @@ The platform consists of three specialized AI agents, each designed for a specif
 
 # Agents
 
-## Personal Agent
-
-The Personal Agent helps employees perform everyday workplace tasks.
+## Personal Agent - (Helps employees perform everyday workplace tasks.)
 
 ### Features
 
-* General AI assistant
-* Attendance management
-* Slack messaging
-* Personal productivity tools
+* General AI assistant * Attendance management * Slack messaging * Personal productivity tools
 
 Example:
-
 > How many sick leaves do I have left?
-
 > Message Backend Team that deployment is complete.
-
 > Explain LangChain.
 
 ---
 
-## Knowledge Agent
-
-The Knowledge Agent retrieves answers from your organization's internal knowledge base.
+## Knowledge Agent - (Retrieves answers from your organization's internal knowledge base.)
 
 ### Features
 
-* Hybrid Search
-* Vector Search
-* Retrieval-Augmented Generation (RAG)
-* Company documentation search
-* Policy and SOP lookup
+* Hybrid Search - Vector Search + BM25
+* Retrieval-Augmented Generation (RAG) over Company documentation search
  
 Example:
 
 > Explain the deployment pipeline.
-
 > What is the leave policy?
-
 > Summarize the onboarding guide.
 
 ---
 
-## Engineering Agent
-
-The Engineering Agent assists developers by monitoring engineering systems and helping investigate issues across services.
+## Engineering Agent - (Assists developers by monitoring engineering systems and helping investigate issues across services.)
 
 ### Features
 
-#### MLflow Monitoring
-
-Monitor MLflow experiments and model serving.
-
-Examples:
-
-* Experiment status
-* Model versions
-* Inference latency
-* API response logs
-* Failure rates
-* Model performance metrics
-
-Example:
-
-> Show today's failed inference requests.
-
-> Which model version is currently deployed?
-
-> What is the average API latency?
-
----
-
-#### API Observability
-
-Analyze application behavior and operational metrics.
-
-Examples:
-
-* API response times
-* Error rates
-* Request failures
-* Health checks
-* Slow endpoints
-* Service availability
-
-Example:
-
-> Which endpoint has the highest latency?
-
-> Show all 500 errors from today.
-
----
-
-#### Codebase Assistant
-
-Help developers understand and work with the project.
-
-Capabilities include:
-
-* Explain project architecture
-* Navigate the codebase
-* Locate classes and functions
-* Explain APIs
-* Suggest refactoring
-* Debug code
-* Generate unit tests
-* Explain stack traces
-
-Example:
-
-> Where is the authentication middleware?
-
-> Explain this FastAPI endpoint.
-
-> Which module handles Slack events?
-
-> Generate tests for this service.
-
----
-
-#### Engineering Knowledge
-
-Search technical documentation including:
-
-* API documentation
-* Architecture diagrams
-* Design documents
-* Runbooks
-* Deployment guides
-* Internal engineering wiki
+#### MLflow Monitoring - (Monitor MLflow experiments and model serving.)
+#### API Observability - (Analyze application behavior and operational metrics.)
 
 ---
 
@@ -149,21 +53,9 @@ Search technical documentation including:
 
 ```text
                            Slack
-
-                              │
-                              ▼
-
-                  Slack Productivity Agents
-
-                ┌────────────────────────────┐
-                │        Request Router       │
-                └──────────────┬─────────────┘
-                               │
       ┌────────────────────────┼────────────────────────┐
       ▼                        ▼                        ▼
-
  Personal Agent         Knowledge Agent        Engineering Agent
-
       │                        │                        │
       │                        │                        │
  Attendance              Hybrid Search           MLflow
@@ -175,22 +67,26 @@ Search technical documentation including:
 
 ---
 
+## 🧪 Demo Images
+
+## 1. Personal Agent(Attendance management)
+<img width="2522" height="1341" alt="SCR-20260718-rlcv" src="https://github.com/user-attachments/assets/24a15faa-0047-4521-afdc-6c2cc1cc9e6f" />
+
+## 2. Kowledge Agent (Org Documents search and answering)
+<img width="2548" height="1314" alt="SCR-20260714-duuf-2" src="https://github.com/user-attachments/assets/10853a56-de61-413b-9b57-f08a302536a7" />
+
+## 3. AutoText Feature (Flags unusual logs in bakend to monitor systems (logs, models, latencies and more))
+<img width="2538" height="1281" alt="SCR-20260718-meli" src="https://github.com/user-attachments/assets/9eda9beb-174d-4dea-91b0-beaa646401c4" />
+
+
+---
 # Future Integrations
 
 * GitHub
 * Jira
-* Confluence
-* PagerDuty
-* Grafana
-* Prometheus
 * Kubernetes
 * Docker
-* Jenkins
-* ArgoCD
-* Datadog
-* Sentry
 * MLflow
-* OpenTelemetry
 
 ---
 
