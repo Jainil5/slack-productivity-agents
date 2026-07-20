@@ -25,7 +25,6 @@
 
 # load_dotenv()
 
-
 # if not USER_TOKEN:
 #     raise Exception("USER_TOKEN not found")
 
